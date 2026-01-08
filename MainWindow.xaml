@@ -1,0 +1,211 @@
+﻿<Window
+    x:Class="NOAA.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctrl="clr-namespace:NOAA.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:NOAA"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="NOAA"
+    Width="1000"
+    Height="800"
+    Activated="Window_Activated"
+    Background="#242424"
+    Closing="Window_Closing"
+    Deactivated="Window_Deactivated"
+    Icon="/Assets/logo.ico"
+    Loaded="Window_Loaded"
+    SizeChanged="Window_SizeChanged"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Background="{StaticResource MainBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Button
+                    x:Name="btnGet"
+                    Grid.Column="0"
+                    Height="38"
+                    Background="#303030"
+                    Click="GetWeatherClick"
+                    Content="Get Weather"
+                    FontSize="16"
+                    Foreground="{StaticResource PrimaryBrush}"
+                    Template="{StaticResource ReformedButton}" />
+                <ctrl:Spinner
+                    x:Name="spinner1"
+                    Grid.Column="0"
+                    Width="240"
+                    Height="32"
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BorderThickness="0"
+                    ChaseClockwise="True"
+                    ChaseMode="4"
+                    ChasePulseSize="6"
+                    ChasePulseSpeed="2"
+                    ChaseRingRadius="0"
+                    ChaseTailLength="4"
+                    DotBrush="{StaticResource ProgressBrushLinear}"
+                    DotCount="12"
+                    DotSize="14"
+                    ProgressHighlightWidth="2"
+                    ProgressIndeterminate="True"
+                    ProgressSpacing="12"
+                    ProgressSweepSpeed="17"
+                    RenderMode="AnimatePositions"
+                    RenderShape="Progress"
+                    WaveAmplitude="16"
+                    WaveDuration="1.1"
+                    WindAmplitude="1"
+                    WindFrequency="0.5" />
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="10,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="{StaticResource SecondaryBrush}"
+                        Text="{Binding Status, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="10,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="{StaticResource SecondaryBrush}"
+                        Text="{Binding Status2, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+            </Grid>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl x:Name="ForecastList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            Margin="10"
+                            Padding="10"
+                            Background="{StaticResource PanelBrushLinear}"
+                            CornerRadius="6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Orientation="Vertical">
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        FontSize="20"
+                                        Foreground="{StaticResource PrimaryBrush}"
+                                        Text="{Binding Name}" />
+                                    <StackPanel Margin="5,5,0,0" Orientation="Horizontal">
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock
+                                                FontSize="16"
+                                                Foreground="Gray"
+                                                Text="Temperature:" />
+                                            <TextBlock
+                                                Margin="5,0,0,0"
+                                                FontSize="16"
+                                                Foreground="LightGray"
+                                                Text="{Binding Temperature, StringFormat='{}{0}°'}" />
+                                            <TextBlock
+                                                FontSize="16"
+                                                Foreground="LightGray"
+                                                Text="{Binding TemperatureUnit}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="5,5,0,0"
+                                        FontSize="14"
+                                        Foreground="LightGray"
+                                        Text="{Binding ShortForecast}" />
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        Foreground="Gray"
+                                        Text="{Binding DetailedForecast}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel Margin="5,10,0,0" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="16"
+                                            Foreground="Gray"
+                                            Text="Wind:" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            FontSize="16"
+                                            Foreground="LightGray"
+                                            Text="{Binding WindSpeed}" />
+                                        <TextBlock
+                                            Margin="10,0,0,0"
+                                            FontSize="16"
+                                            Foreground="Gray"
+                                            Text="Direction:" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            FontSize="16"
+                                            Foreground="LightGray"
+                                            Text="{Binding WindDirection}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Image
+                                    Grid.Column="1"
+                                    Width="140"
+                                    Height="140"
+                                    Margin="4"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Icon, Converter={StaticResource iconFallback}}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                            <Border.Effect>
+                                <DropShadowEffect
+                                    BlurRadius="5"
+                                    Opacity="0.3"
+                                    ShadowDepth="8"
+                                    Color="Black" />
+                            </Border.Effect>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!--#region [Background Effect]-->
+        <ctrl:Spinner
+            x:Name="bkgnd"
+            Grid.RowSpan="2"
+            Width="150"
+            Height="150"
+            Margin="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            DotBrush="{StaticResource WindBrushRadial}"
+            DotCount="100"
+            DotSize="8"
+            RenderMode="AnimatePositions"
+            RenderShape="Wind"
+            Visibility="{Binding IsAnimated, Mode=OneWay, Converter={StaticResource boolToVisibility}}"
+            WaveAmplitude="12"
+            WaveDuration="1.1"
+            WindAmplitude="34"
+            WindBaseSpeed="20"
+            WindFrequency="0.1"
+            WindLowOpacity="False" />
+        <!--#endregion-->
+
+    </Grid>
+</Window>

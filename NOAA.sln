@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NOAA", "NOAA.csproj", "{666AA048-62A9-421E-A9C1-4445BD8CBDEB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{666AA048-62A9-421E-A9C1-4445BD8CBDEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{666AA048-62A9-421E-A9C1-4445BD8CBDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{666AA048-62A9-421E-A9C1-4445BD8CBDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{666AA048-62A9-421E-A9C1-4445BD8CBDEB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A4B6F8E-934D-4FD9-9033-6A3E9CB14FFD}
+	EndGlobalSection
+EndGlobal
