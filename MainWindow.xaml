@@ -16,12 +16,13 @@
     Icon="/Assets/logo.ico"
     Loaded="Window_Loaded"
     SizeChanged="Window_SizeChanged"
-    WindowStartupLocation="CenterScreen"
+    WindowStartupLocation="Manual"
     mc:Ignorable="d">
-    <Grid Background="{StaticResource MainBackground}">
+    <Grid x:Name="container" Background="{StaticResource MainBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition />
+            <RowDefinition Height="60" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0">
@@ -92,7 +93,8 @@
                 </Grid>
             </Grid>
         </StackPanel>
-        <ScrollViewer Grid.Row="1">
+
+        <ScrollViewer Grid.Row="1" Grid.RowSpan="2">
             <ItemsControl x:Name="ForecastList">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -187,7 +189,7 @@
         <!--#region [Background Effect]-->
         <ctrl:Spinner
             x:Name="bkgnd"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Width="150"
             Height="150"
             Margin="0"
@@ -206,6 +208,20 @@
             WindFrequency="0.1"
             WindLowOpacity="False" />
         <!--#endregion-->
+
+        <ctrl:MessageBar
+            x:Name="msgBar"
+            Grid.Row="2"
+            Margin="4,0,2,0"
+            AnimationSpeed="500"
+            BackgroundBrush="{StaticResource MessageBrush}"
+            BarText=""
+            BarWidth="{Binding ElementName=container, Path=Width}"
+            BorderBrush="{StaticResource OutlineBrush}"
+            BorderThickness="1"
+            ForegroundBrush="{StaticResource NormalBrush}"
+            TextSize="16"
+            TimeoutMS="4000" />
 
     </Grid>
 </Window>

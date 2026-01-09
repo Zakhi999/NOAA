@@ -1,0 +1,42 @@
+﻿<UserControl
+    x:Class="NOAA.Controls.MessageBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:NOAA.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="MBC"
+    d:DesignHeight="80"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <Canvas
+        x:Name="DesignerPane"
+        Width="{Binding ElementName=MBC, Path=BarWidth, FallbackValue=900}"
+        VerticalAlignment="Stretch"
+        ClipToBounds="True">
+        <DockPanel
+            x:Name="MessagePane"
+            Width="0"
+            Height="0">
+            <Border
+                x:Name="MessageBorder"
+                Grid.Row="1"
+                VerticalAlignment="Stretch"
+                Background="{Binding ElementName=MBC, Path=BackgroundBrush, FallbackValue=#181818}"
+                BorderBrush="{Binding ElementName=MBC, Path=BorderBrush, FallbackValue=#AAAAAA}"
+                BorderThickness="{Binding ElementName=MBC, Path=BorderThickness, FallbackValue=1}"
+                CornerRadius="4">
+                <TextBlock
+                    x:Name="Message"
+                    Padding="8"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    Foreground="{Binding ElementName=MBC, Path=ForegroundBrush, FallbackValue=WhiteSmoke}"
+                    IsHitTestVisible="False"
+                    Text="{Binding ElementName=MBC, Path=BarText}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap" />
+            </Border>
+        </DockPanel>
+    </Canvas>
+</UserControl>
