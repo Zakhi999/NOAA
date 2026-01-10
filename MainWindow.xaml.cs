@@ -223,7 +223,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    async Task<double> LoadWindSpeed(string url, double factor = 4.0)
+    async Task<double> LoadWindSpeed(string url, double factor = 3.0)
     {
         double result = 0d;
         try
