@@ -25,6 +25,7 @@
             <RowDefinition Height="60" />
         </Grid.RowDefinitions>
 
+        <!--#region [Button and Status]-->
         <StackPanel Grid.Row="0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -94,7 +95,9 @@
                 </Grid>
             </Grid>
         </StackPanel>
-
+        <!--#endregion-->
+        
+        <!--#region [Weather Report]-->
         <ScrollViewer Grid.Row="1" Grid.RowSpan="2">
             <ItemsControl x:Name="ForecastList">
                 <ItemsControl.ItemTemplate>
@@ -186,7 +189,8 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-
+        <!--#endregion-->
+        
         <!--#region [Background Effect]-->
         <ctrl:Spinner
             x:Name="bkgnd"

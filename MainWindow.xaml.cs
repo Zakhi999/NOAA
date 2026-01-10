@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace NOAA;
 
@@ -19,6 +20,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     double _longitude = 0;
     double _windowLeft = 0;
     double _windowTop = 0;
+    double _windBrushOpacity = 0;
+    string _windBrushColor = "";
+    RadialGradientBrush? _windRadialBrush;
     CancellationTokenSource _cts = new CancellationTokenSource();
     readonly WeatherService _weatherService = new WeatherService();
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -101,15 +105,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }, System.Windows.Threading.DispatcherPriority.Background);
     }
 
-    void Window_Activated(object sender, EventArgs e)
-    {
-        IsAnimated = true;
-    }
+    void Window_Activated(object sender, EventArgs e) => IsAnimated = true;
 
-    void Window_Deactivated(object sender, EventArgs e)
-    {
-        IsAnimated = false;
-    }
+    void Window_Deactivated(object sender, EventArgs e) => IsAnimated = false;
 
     async void Window_Loaded(object sender, RoutedEventArgs e)
     {
@@ -122,8 +120,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             // Emmaus, PA (USA)
             _latitude = ConfigManager.Get("Latitude", defaultValue: 40.539d);
             _longitude = ConfigManager.Get("Longitude", defaultValue: -75.496d);
-            _windowLeft = ConfigManager.Get("WindowLeft", defaultValue: 250D);
-            _windowTop = ConfigManager.Get("WindowTop", defaultValue: 200D);
+            _windowLeft = ConfigManager.Get("WindowLeft", defaultValue: 250d);
+            _windowTop = ConfigManager.Get("WindowTop", defaultValue: 200d);
+            _windBrushColor = ConfigManager.Get("WindBrushColor", defaultValue: "#1E90FF");
+            _windBrushOpacity = ConfigManager.Get("WindBrushOpacity", defaultValue: 0.5d);
+            _windRadialBrush = Extensions.CreateRadialBrush(_windBrushColor, _windBrushOpacity);
+            if (_windRadialBrush != null)
+                bkgnd.DotBrush = _windRadialBrush;
 
             // Check if position is on any screen
             this.RestorePosition(_windowLeft, _windowTop);
@@ -165,6 +168,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         ConfigManager.Set("Longitude", _longitude);
         ConfigManager.Set("WindowLeft", value: this.Left.IsInvalid() ? 250D : this.Left);
         ConfigManager.Set("WindowTop", value: this.Top.IsInvalid() ? 200D : this.Top);
+        ConfigManager.Set("WindBrushColor", _windBrushColor);
+        ConfigManager.Set("WindBrushOpacity", _windBrushOpacity);
         _weatherService?.Dispose();
         _cts?.Cancel(); // Stop the timer when app closes
     }

@@ -261,17 +261,52 @@ public static class Extensions
     }
 
     #region [Color Brush Methods]
-    public static RadialGradientBrush CreateRadialBrush(string hex)
+    public static (byte A, byte R, byte G, byte B) ParseHexColor(string hex)
     {
         if (string.IsNullOrWhiteSpace(hex))
-            throw new ArgumentException("Hex string cannot be null or empty.", nameof(hex));
+            WriteToLog("Hex color string cannot be null or empty.", LogLevel.WARNING);
+
+        // Normalize: remove leading '#'
+        if (hex.StartsWith("#"))
+            hex = hex.Substring(1);
+
+        if (hex.Length != 6 && hex.Length != 8)
+            WriteToLog("Hex color string must be 6 (RRGGBB) or 8 (AARRGGBB) characters.", LogLevel.WARNING);
+
+        int index = 0;
+
+        byte a = 255; // default opaque
+
+        if (hex.Length == 8)
+        {
+            a = Convert.ToByte(hex.Substring(index, 2), 16);
+            index += 2;
+        }
+
+        byte r = Convert.ToByte(hex.Substring(index, 2), 16);
+        byte g = Convert.ToByte(hex.Substring(index + 2, 2), 16);
+        byte b = Convert.ToByte(hex.Substring(index + 4, 2), 16);
+
+        return (a, r, g, b);
+    }
+
+    public static RadialGradientBrush? CreateRadialBrush(string hex, double opacity = 0.6)
+    {
+        if (string.IsNullOrWhiteSpace(hex))
+        {
+            WriteToLog("Hex color string cannot be null or empty.", LogLevel.WARNING);
+            return null;
+        }
 
         // Normalize input (strip leading # if present)
         if (hex.StartsWith("#"))
             hex = hex.Substring(1);
 
         if (hex.Length != 6)
-            throw new ArgumentException("Hex string must be 6 characters (RRGGBB).", nameof(hex));
+        {
+            WriteToLog("Hex color string must be 6 characters (RRGGBB).", LogLevel.WARNING);
+            return null;
+        }
 
         // Parse hex into Color
         byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
@@ -282,10 +317,11 @@ public static class Extensions
         // Create lighter/darker variants
         Color lighter = Colors.White;
         //Color lighter = BrightenGamma(baseColor, 2.0); // 100% lighter
-        Color darker = DarkenGamma(baseColor, 0.2); // 80% darker
+        Color darker = DarkenGamma(baseColor, 0.1); // 90% darker
 
         var brush = new RadialGradientBrush
         {
+            Opacity = opacity,
             GradientOrigin = new System.Windows.Point(0.75, 0.25),
             Center = new System.Windows.Point(0.5, 0.5),
             RadiusX = 0.5,
@@ -390,7 +426,7 @@ public static class Extensions
     public static LinearGradientBrush CreateGradientBrush(Color c1, Color c2, Color c3)
     {
         var gs1 = new GradientStop(c1, 0);
-        var gs2 = new GradientStop(c2, 0.5);
+        var gs2 = new GradientStop(c2, 0.6);
         var gs3 = new GradientStop(c3, 1);
         var gsc = new GradientStopCollection { gs1, gs2, gs3 };
         var lgb = new LinearGradientBrush
