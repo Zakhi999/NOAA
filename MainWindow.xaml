@@ -34,11 +34,12 @@
                 <Button
                     x:Name="btnGet"
                     Grid.Column="0"
-                    Height="38"
+                    Margin="2,1,0,0"
+                    Height="30"
                     Background="#303030"
                     Click="GetWeatherClick"
                     Content="Get Weather"
-                    FontSize="16"
+                    FontSize="14"
                     Foreground="{StaticResource PrimaryBrush}"
                     Template="{StaticResource ReformedButton}" />
                 <ctrl:Spinner
@@ -46,7 +47,7 @@
                     Grid.Column="0"
                     Width="240"
                     Height="32"
-                    Margin="0,0,0,0"
+                    Margin="2,2,0,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     BorderThickness="0"
