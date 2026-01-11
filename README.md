@@ -17,3 +17,5 @@
 
 ![Screenshot](./Assets/Screenshot.png)
 
+![Settings](./Assets/Screenshot2.png)
+
