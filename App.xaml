@@ -172,7 +172,7 @@
                 <GradientStop Offset="1.0" Color="#222222" />
             </RadialGradientBrush.GradientStops>
         </RadialGradientBrush>
-        <RadialGradientBrush x:Key="WindBrushRadial" Opacity="0.7" GradientOrigin="0.75,0.25">
+        <RadialGradientBrush x:Key="WindBrushRadial" GradientOrigin="0.75,0.25" Opacity="0.7">
             <RadialGradientBrush.GradientStops>
                 <GradientStop Offset="0.0" Color="#FFFFFF" />
                 <GradientStop Offset="0.6" Color="#1E90FF" />

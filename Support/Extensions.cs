@@ -1090,7 +1090,7 @@ public static class Extensions
         imgCtrl.Source = image;
     }
 
-    public static void RestorePosition(this Window window, double left, double top)
+    public static void RestorePosition(this Window window, double left, double top, double width = 0, double height = 0)
     {
         try
         {
@@ -1108,6 +1108,10 @@ public static class Extensions
                 window.WindowStartupLocation = WindowStartupLocation.Manual;
                 window.Left = left;
                 window.Top = top;
+                if (!width.IsInvalidOrZero())
+                    window.Width = width;
+                if (!height.IsInvalidOrZero())
+                    window.Height = height;
             }
         }
         catch { /* ignore */ }
@@ -1523,7 +1527,7 @@ public static class Extensions
                 WriteToLog($"Error during midnight task: {ex.Message}", level: LogLevel.ERROR);
             }
 
-            // Small buffer to ensure we don't double-triggering if logic completes in milliseconds, or if the clock is skewed.
+            // Short buffer to prevent double-triggering if logic completes in milliseconds, or if the clock is skewed.
             await Task.Delay(TimeSpan.FromSeconds(5), ct);
         }
     }

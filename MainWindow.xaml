@@ -35,8 +35,8 @@
                 <Button
                     x:Name="btnGet"
                     Grid.Column="0"
-                    Margin="2,1,0,0"
                     Height="30"
+                    Margin="2,1,0,0"
                     Background="#303030"
                     Click="GetWeatherClick"
                     Content="Get Weather"
@@ -96,7 +96,7 @@
             </Grid>
         </StackPanel>
         <!--#endregion-->
-        
+
         <!--#region [Weather Report]-->
         <ScrollViewer Grid.Row="1" Grid.RowSpan="2">
             <ItemsControl x:Name="ForecastList">
@@ -118,7 +118,7 @@
                                         FontSize="20"
                                         Foreground="{StaticResource PrimaryBrush}"
                                         Text="{Binding Name}" />
-                                    <StackPanel Margin="5,5,0,0" Orientation="Horizontal">
+                                    <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
                                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                             <TextBlock
                                                 FontSize="16"
@@ -135,17 +135,18 @@
                                                 Text="{Binding TemperatureUnit}" />
                                         </StackPanel>
                                     </StackPanel>
-                                    <TextBlock
-                                        Margin="5,5,0,0"
-                                        FontSize="14"
-                                        Foreground="LightGray"
-                                        Text="{Binding ShortForecast}" />
-                                    <TextBlock
-                                        Margin="5,0,0,0"
-                                        Foreground="Gray"
-                                        Text="{Binding DetailedForecast}"
-                                        TextWrapping="Wrap" />
-                                    <StackPanel Margin="5,10,0,0" Orientation="Horizontal">
+                                    <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
+                                        <TextBlock
+                                            FontSize="16"
+                                            Foreground="Gray"
+                                            Text="Precipitation:" />
+                                        <TextBlock
+                                            Margin="5,0,0,0"
+                                            FontSize="16"
+                                            Foreground="LightGray"
+                                            Text="{Binding PrecipitationAmount}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
                                         <TextBlock
                                             FontSize="16"
                                             Foreground="Gray"
@@ -166,6 +167,16 @@
                                             Foreground="LightGray"
                                             Text="{Binding WindDirection}" />
                                     </StackPanel>
+                                    <TextBlock
+                                        Margin="5,8,0,0"
+                                        FontSize="14"
+                                        Foreground="LightGray"
+                                        Text="{Binding ShortForecast}" />
+                                    <TextBlock
+                                        Margin="5,4,0,0"
+                                        Foreground="Gray"
+                                        Text="{Binding DetailedForecast}"
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Image
                                     Grid.Column="1"
@@ -190,7 +201,7 @@
             </ItemsControl>
         </ScrollViewer>
         <!--#endregion-->
-        
+
         <!--#region [Background Effect]-->
         <ctrl:Spinner
             x:Name="bkgnd"
