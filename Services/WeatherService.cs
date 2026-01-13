@@ -9,7 +9,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-using NOAA2;
+using NOAA_Model1;
+using NOAA_Model2;
 
 namespace NOAA;
 
@@ -324,11 +325,10 @@ public class WeatherService : IDisposable
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
 
-            var uom = forecast.Properties.QuantitativePrecipitation.Uom;
-            uom = uom.Replace("wmoUnit:", "", StringComparison.OrdinalIgnoreCase);
+            var uom = GetUnitCode(forecast.Properties.QuantitativePrecipitation.Uom);
             Debug.WriteLine($"[INFO] QuantitativePrecipitation unit of measure is {uom}");
             double divFactor = 0;
-            if (uom.StartsWith("mm", StringComparison.OrdinalIgnoreCase))
+            if (uom.Equals("mm", StringComparison.OrdinalIgnoreCase))
             {
                 divFactor = 25.4; // divide the length value by 25.4 (1 millimeter = 0.0393701 inches, 1 inch = 25.4 millimeters)
             }
@@ -376,11 +376,10 @@ public class WeatherService : IDisposable
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
 
-            var uom = forecast.Properties.QuantitativePrecipitation.Uom;
-            uom = uom.Replace("wmoUnit:", "", StringComparison.OrdinalIgnoreCase);
+            var uom = GetUnitCode(forecast.Properties.QuantitativePrecipitation.Uom);
             Debug.WriteLine($"[INFO] QuantitativePrecipitation unit of measure is {uom}");
             double divFactor = 0;
-            if (uom.StartsWith("mm", StringComparison.OrdinalIgnoreCase))
+            if (uom.Equals("mm", StringComparison.OrdinalIgnoreCase))
             {
                 divFactor = 25.4; // divide the length value by 25.4 (1 millimeter = 0.0393701 inches, 1 inch = 25.4 millimeters)
             }
@@ -422,14 +421,13 @@ public class WeatherService : IDisposable
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
 
-            var uom = forecast.Properties.ProbabilityOfPrecipitation.Uom;
-            uom = uom.Replace("wmoUnit:", "", StringComparison.OrdinalIgnoreCase);
+            var uom = GetUnitCode(forecast.Properties.ProbabilityOfPrecipitation.Uom);
             Debug.WriteLine($"[INFO] ProbabilityOfPrecipitation unit of measure is {uom}");
             foreach (var item in forecast.Properties.ProbabilityOfPrecipitation.Values)
             {
                 if (double.TryParse($"{item.Value}", out double value))
                 {
-                    values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value} {(uom.StartsWith("percent") ? "%" : $"{uom}")}" });
+                    values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value} {(uom.StartsWith("percent", StringComparison.OrdinalIgnoreCase) ? "%" : $"{uom}")}" });
                 }
                 else
                 {
@@ -443,6 +441,20 @@ public class WeatherService : IDisposable
             Extensions.WriteToLog($"{System.Reflection.MethodBase.GetCurrentMethod()?.Name}: {ex.Message}", LogLevel.ERROR);
         }
         return values;
+    }
+
+    /// <summary>
+    /// Returns the unit of measure from the wmoUnit string. <br/>
+    /// <code>
+    ///   e.g. "wmoUnit:m" ⇒ "m"
+    /// </code>
+    /// </summary>
+    public string GetUnitCode(string wmoUnit)
+    {
+        if (string.IsNullOrWhiteSpace(wmoUnit))
+            return string.Empty;
+
+        return wmoUnit.Replace("wmoUnit:", "", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

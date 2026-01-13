@@ -13,9 +13,9 @@ namespace NOAA
     }
 }
 
-namespace NOAA
+namespace NOAA_Model1
 {
-    #region [Zone/Grid model for api.weather.gov]
+    #region [Zone model for api.weather.gov]
     public class WeatherForecastResponse
     {
         [JsonPropertyName("@context")]
@@ -936,11 +936,12 @@ namespace NOAA
 #endregion
 
 /// <summary>
-///   Because some of the serializations share members, I've opted to 
+///   Because some of the serializations shared members, I've opted to 
 ///   create a 2nd namespace, so we don't need one monolithic class.
 /// </summary>
-namespace NOAA2
+namespace NOAA_Model2
 {
+    #region [Grid model for api.weather.gov]
     public class GridpointResponse
     {
         [JsonPropertyName("@context")]
@@ -1084,4 +1085,5 @@ namespace NOAA2
         public UnitValue Visibility { get; set; }
         public List<string> Attributes { get; set; }
     }
+    #endregion
 }

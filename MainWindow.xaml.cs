@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
+using NOAA_Model1;
+using NOAA_Model2;
+
 namespace NOAA;
 
 /// <summary>
@@ -30,7 +33,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     CancellationTokenSource _cts = new CancellationTokenSource();
     readonly WeatherService _weatherService = new WeatherService();
     public event PropertyChangedEventHandler? PropertyChanged;
-    public void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    public void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        if (string.IsNullOrEmpty(propertyName)) { return; }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
     bool isAnimated = false;
     public bool IsAnimated
@@ -89,7 +96,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         btnGet.Content = "";
         btnGet.IsEnabled = false;
-        spinner1.Visibility = Visibility.Visible;
+        spProgress.Visibility = Visibility.Visible;
         Status = "🔔 Fetching data…";
 
         // We use the lat/long to get the ZONE/GRID URL from https://api.weather.gov
@@ -101,7 +108,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 msgBar.BarText = Status = $"🚨 Failed to get forecast URL, try again later.";
                 await Task.Delay(500); // prevent spamming
-                spinner1.Visibility = Visibility.Hidden;
+                spProgress.Visibility = Visibility.Hidden;
                 btnGet.IsEnabled = true;
                 btnGet.Content = Constants.MainButtonText;
             }, System.Windows.Threading.DispatcherPriority.Background);
@@ -116,7 +123,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             msgBar.BarText = $"🔔 Attempt completed ({DateTime.Now.ToLongTimeString()})";
             await Task.Delay(500); // prevent spamming
-            spinner1.Visibility = Visibility.Hidden;
+            spProgress.Visibility = Visibility.Hidden;
             btnGet.IsEnabled = true;
             btnGet.Content = Constants.MainButtonText;
         }, System.Windows.Threading.DispatcherPriority.Background);
@@ -131,7 +138,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             this.Title = $"NOAA Weather Forecast - v{App.GetCurrentAssemblyVersion()}";
-            spinner1.Visibility = Visibility.Hidden;
+            spProgress.Visibility = Visibility.Hidden;
             btnGet.Content = Constants.MainButtonText;
 
             // Emmaus, PA (USA)
@@ -145,7 +152,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _windBrushOpacity = ConfigManager.Get("WindBrushOpacity", defaultValue: 0.5d);
             _windRadialBrush = Extensions.CreateRadialBrush(_windBrushColor, _windBrushOpacity);
             if (_windRadialBrush != null)
-                bkgnd.DotBrush = _windRadialBrush;
+                spBackground.DotBrush = _windRadialBrush;
 
             // Check if position is on any screen
             this.RestorePosition(_windowLeft, _windowTop, _windowWidth, _windowHeight);
@@ -169,7 +176,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 await Dispatcher.InvokeAsync(() =>
                 {
                     msgBar.BarText = $"🔔 Setting background wind speed to {wind}";
-                    bkgnd.WindBaseSpeed += wind;
+                    spBackground.WindBaseSpeed += wind;
                 }, System.Windows.Threading.DispatcherPriority.Background);
             }
             #endregion
@@ -208,8 +215,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Debug.WriteLine($"[INFO] New size: {e.NewSize.Width:N0},{e.NewSize.Height:N0}");
 
         // Add in some margin
-        bkgnd.Width = e.NewSize.Width - 10;
-        bkgnd.Height = e.NewSize.Height - 10;
+        spBackground.Width = e.NewSize.Width - 10;
+        spBackground.Height = e.NewSize.Height - 10;
     }
     #endregion
 
@@ -295,16 +302,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             //Extensions.ConvertToLocalTime(forecast.Properties.UpdateTime);
 
-            Status2 = $"Probability of precipitation: {forecast.Properties.Periods[0].ProbabilityOfPrecipitation.Value}%";
 
-            if (forecast.Properties.Elevation.UnitCode.StartsWith("wmoUnit:m", StringComparison.OrdinalIgnoreCase))
+            Status = $"Forecast updated {forecast.Properties.UpdateTime} ";
+            var ucode = _weatherService.GetUnitCode(forecast.Properties.Elevation.UnitCode);
+            if (ucode.Equals("m", StringComparison.OrdinalIgnoreCase))
             {
                 var elevation = forecast.Properties.Elevation.Value * 3.28084; // convert meters to feet
-                Status = $"Updated {forecast.Properties.UpdateTime} (elevation {elevation:N0} feet)";
+                Status2 = $"Probability of precipitation: {forecast.Properties.Periods[0].ProbabilityOfPrecipitation.Value}% (elevation {elevation:N0} feet)";
             }
             else
             {
-                Status = $"Updated {forecast.Properties.UpdateTime} (elevation {forecast.Properties.Elevation.Value:N0} {forecast.Properties.Elevation.UnitCode.Replace("wmoUnit:","")})";
+                Status2 = $"Probability of precipitation: {forecast.Properties.Periods[0].ProbabilityOfPrecipitation.Value}% (elevation {forecast.Properties.Elevation.Value:N0} {ucode})";
             }
         }
         catch (Exception ex)

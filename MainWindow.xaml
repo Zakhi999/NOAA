@@ -44,7 +44,7 @@
                     Foreground="{StaticResource PrimaryBrush}"
                     Template="{StaticResource ReformedButton}" />
                 <ctrl:Spinner
-                    x:Name="spinner1"
+                    x:Name="spProgress"
                     Grid.Column="0"
                     Width="240"
                     Height="32"
@@ -117,8 +117,18 @@
                                         Margin="5,0,0,0"
                                         FontSize="20"
                                         Foreground="{StaticResource PrimaryBrush}"
-                                        Text="{Binding Name}" />
-                                    <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
+                                        Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock
+                                        Margin="5,8,0,0"
+                                        FontSize="14"
+                                        Foreground="LightGray"
+                                        Text="{Binding ShortForecast, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock
+                                        Margin="5,4,0,0"
+                                        Foreground="Gray"
+                                        Text="{Binding DetailedForecast, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel Margin="5,10,0,0" Orientation="Horizontal">
                                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                             <TextBlock
                                                 FontSize="16"
@@ -128,11 +138,11 @@
                                                 Margin="5,0,0,0"
                                                 FontSize="16"
                                                 Foreground="LightGray"
-                                                Text="{Binding Temperature, StringFormat='{}{0}°'}" />
+                                                Text="{Binding Temperature, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0}°'}" />
                                             <TextBlock
                                                 FontSize="16"
                                                 Foreground="LightGray"
-                                                Text="{Binding TemperatureUnit}" />
+                                                Text="{Binding TemperatureUnit, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </StackPanel>
                                     </StackPanel>
                                     <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
@@ -144,7 +154,7 @@
                                             Margin="5,0,0,0"
                                             FontSize="16"
                                             Foreground="LightGray"
-                                            Text="{Binding PrecipitationAmount}" />
+                                            Text="{Binding PrecipitationAmount, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
                                     <StackPanel Margin="5,4,0,0" Orientation="Horizontal">
                                         <TextBlock
@@ -155,7 +165,7 @@
                                             Margin="5,0,0,0"
                                             FontSize="16"
                                             Foreground="LightGray"
-                                            Text="{Binding WindSpeed}" />
+                                            Text="{Binding WindSpeed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                         <TextBlock
                                             Margin="10,0,0,0"
                                             FontSize="16"
@@ -165,18 +175,8 @@
                                             Margin="5,0,0,0"
                                             FontSize="16"
                                             Foreground="LightGray"
-                                            Text="{Binding WindDirection}" />
+                                            Text="{Binding WindDirection, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
-                                    <TextBlock
-                                        Margin="5,8,0,0"
-                                        FontSize="14"
-                                        Foreground="LightGray"
-                                        Text="{Binding ShortForecast}" />
-                                    <TextBlock
-                                        Margin="5,4,0,0"
-                                        Foreground="Gray"
-                                        Text="{Binding DetailedForecast}"
-                                        TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Image
                                     Grid.Column="1"
@@ -185,7 +185,7 @@
                                     Margin="4"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
-                                    Source="{Binding Icon, Converter={StaticResource iconFallback}}"
+                                    Source="{Binding Icon, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource iconFallback}}"
                                     Stretch="Uniform" />
                             </Grid>
                             <Border.Effect>
@@ -204,7 +204,7 @@
 
         <!--#region [Background Effect]-->
         <ctrl:Spinner
-            x:Name="bkgnd"
+            x:Name="spBackground"
             Grid.RowSpan="3"
             Width="150"
             Height="150"
