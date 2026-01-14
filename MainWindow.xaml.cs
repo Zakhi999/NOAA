@@ -92,51 +92,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
 
     #region [Events]
-    async void GetWeatherClick(object sender, RoutedEventArgs e)
-    {
-        btnGet.Content = "";
-        btnGet.IsEnabled = false;
-        spProgress.Visibility = Visibility.Visible;
-        Status = "🔔 Fetching data…";
-
-        // We use the lat/long to get the ZONE/GRID URL from https://api.weather.gov
-        _apiUrls = await _weatherService.GetForecastUrlAsync(_latitude, _longitude);
-
-        if (_apiUrls is null)
-        {
-            await Dispatcher.InvokeAsync(async () =>
-            {
-                msgBar.BarText = Status = $"🚨 Failed to get forecast URL, try again later.";
-                await Task.Delay(500); // prevent spamming
-                spProgress.Visibility = Visibility.Hidden;
-                btnGet.IsEnabled = true;
-                btnGet.Content = Constants.MainButtonText;
-            }, System.Windows.Threading.DispatcherPriority.Background);
-            return;
-        }
-
-        // Then we'll use that to fetch the detailed forecast for the week.
-        await LoadForecast(_apiUrls);
-
-        // Re-enable UI elements and update status once complete (back on the UI thread)
-        await Dispatcher.InvokeAsync(async () =>
-        {
-            msgBar.BarText = $"🔔 Attempt completed ({DateTime.Now.ToLongTimeString()})";
-            await Task.Delay(500); // prevent spamming
-            spProgress.Visibility = Visibility.Hidden;
-            btnGet.IsEnabled = true;
-            btnGet.Content = Constants.MainButtonText;
-        }, System.Windows.Threading.DispatcherPriority.Background);
-    }
-
-    void Window_Activated(object sender, EventArgs e) => IsAnimated = true;
-
-    void Window_Deactivated(object sender, EventArgs e) => IsAnimated = false;
-
+    /// <summary>
+    /// <see cref="System.Windows.Window"/> event
+    /// </summary>
     async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         try
         {
+            var isodt = Extensions.ConvertToLocalTime("2026-01-11T10:06:35+00:00"); // 01/11/2026 05:06:35 AM
+
             this.Title = $"NOAA Weather Forecast - v{App.GetCurrentAssemblyVersion()}";
             spProgress.Visibility = Visibility.Hidden;
             btnGet.Content = Constants.MainButtonText;
@@ -191,6 +155,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// <see cref="System.Windows.Window"/> event
+    /// </summary>
     void Window_Closing(object sender, CancelEventArgs e)
     {
         ConfigManager.Set("Latitude", _latitude);
@@ -207,6 +174,59 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         _cts?.Cancel(); // Signal any loops/timers that it's time to shut it down.
     }
 
+    /// <summary>
+    /// <see cref="System.Windows.Controls.Button"/> event
+    /// </summary>
+    async void GetWeatherClick(object sender, RoutedEventArgs e)
+    {
+        btnGet.Content = "";
+        btnGet.IsEnabled = false;
+        spProgress.Visibility = Visibility.Visible;
+        Status = "🔔 Fetching data…";
+
+        // We use the lat/long to get the ZONE/GRID URL from https://api.weather.gov
+        _apiUrls = await _weatherService.GetForecastUrlAsync(_latitude, _longitude);
+
+        if (_apiUrls is null)
+        {
+            await Dispatcher.InvokeAsync(async () =>
+            {
+                msgBar.BarText = Status = $"🚨 Failed to get forecast URL, try again later.";
+                await Task.Delay(500); // prevent spamming
+                spProgress.Visibility = Visibility.Hidden;
+                btnGet.IsEnabled = true;
+                btnGet.Content = Constants.MainButtonText;
+            }, System.Windows.Threading.DispatcherPriority.Background);
+            return;
+        }
+
+        // Then we'll use that to fetch the detailed forecast for the week.
+        await LoadForecast(_apiUrls);
+
+        // Re-enable UI elements and update status once complete (back on the UI thread)
+        await Dispatcher.InvokeAsync(async () =>
+        {
+            msgBar.BarText = $"🔔 Attempt completed ({DateTime.Now.ToLongTimeString()})";
+            await Task.Delay(500); // prevent spamming
+            spProgress.Visibility = Visibility.Hidden;
+            btnGet.IsEnabled = true;
+            btnGet.Content = Constants.MainButtonText;
+        }, System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// <see cref="System.Windows.Window"/> event
+    /// </summary>
+    void Window_Activated(object sender, EventArgs e) => IsAnimated = true;
+
+    /// <summary>
+    /// <see cref="System.Windows.Window"/> event
+    /// </summary>
+    void Window_Deactivated(object sender, EventArgs e) => IsAnimated = false;
+
+    /// <summary>
+    /// <see cref="System.Windows.Window"/> event
+    /// </summary>
     void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (e.NewSize.IsInvalidOrZero())
@@ -230,6 +250,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             WeatherForecastResponse? forecast = null;
 
+            // Weekly forecast details
             if (url is null)
                 forecast = await _weatherService.GetWeeklyPHIForecastAsync("34,100"); // PHI grid default
             else
@@ -241,7 +262,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 return;
             }
 
-            // Extra precipitation details for the week.
+            // Precipitation forecast details
             if (url is null)
                 precipAmounts = await _weatherService.GetWeeklyQuantitativePrecipitationAsync("PHI", "34,100");
             else
@@ -268,6 +289,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                2026-01-15T00:00:00+00:00/PT6H  0.0 inches 
                2026-01-15T06:00:00+00:00/PT6H  0.1 inches 
             */
+
+            #region [Extras]
             if (getProbabilityOfPrecipitation)
             {
                 var probabilities = await _weatherService.GetWeeklyProbabilityOfPrecipitationAsync("PHI", "34,100");
@@ -280,8 +303,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                    2026-01-12T03:00:00+00:00/PT14H  0 % 
                 */
             }
+            #endregion
 
-            // Confirm our collections are in sync (we could add date checking to this to confirm match)
+            // Confirm our collections are in sync (we could add date checking to confirm match)
             if (forecast.Properties.Periods.Count == precipAmounts.Count)
             {
                 for (int i = 0; i < forecast.Properties.Periods.Count; i++)
@@ -299,9 +323,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
             // Set the data source for the ItemsControl
             ForecastList.ItemsSource = forecast.Properties.Periods;
-
-            //Extensions.ConvertToLocalTime(forecast.Properties.UpdateTime);
-
 
             Status = $"Forecast updated {forecast.Properties.UpdateTime} ";
             var ucode = _weatherService.GetUnitCode(forecast.Properties.Elevation.UnitCode);
@@ -321,7 +342,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    async Task<double> LoadWindSpeed(string url, double factor = 3.5)
+    async Task<double> LoadWindSpeed(string url, double factor = 4d)
     {
         double result = 0d;
         try
