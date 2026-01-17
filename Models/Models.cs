@@ -11,6 +11,13 @@ namespace NOAA
         public string WeeklyForecast { get; set; } // https://api.weather.gov/gridpoints/PHI/34,100/forecast
         public string GridData { get; set; }       // https://api.weather.gov/gridpoints/PHI/34,100
     }
+
+    public class MergedWeather
+    {
+        public DateTime Time { get; set; }
+        public string ForcastPrecip { get; set; }
+        public string DetailPrecip { get; set; }
+    }
 }
 
 namespace NOAA_Model1
@@ -129,8 +136,8 @@ namespace NOAA_Model1
     public class PrecipitationValue
     {
         public string Time { get; set; }
-
         public string Value { get; set; }
+        public string UnitOfMeasure { get; set; }
     }
     #endregion
 }

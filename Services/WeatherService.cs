@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using NOAA_Model1;
@@ -338,11 +339,11 @@ public class WeatherService : IDisposable
                 {
                     if (!divFactor.IsInvalidOrZero())
                     {
-                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} inches" });
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} inches", UnitOfMeasure = "inches" });
                     }
                     else
                     {
-                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} {uom}" });
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} {uom}", UnitOfMeasure = $"{uom}" });
                     }
                 }
                 else
@@ -389,11 +390,11 @@ public class WeatherService : IDisposable
                 {
                     if (!divFactor.IsInvalidOrZero())
                     {
-                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} inches" });
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} inches", UnitOfMeasure = "inches" });
                     }
                     else
                     {
-                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} {uom}" });
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} {uom}", UnitOfMeasure = $"{uom}" });
                     }
                 }
                 else
@@ -427,7 +428,7 @@ public class WeatherService : IDisposable
             {
                 if (double.TryParse($"{item.Value}", out double value))
                 {
-                    values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value} {(uom.StartsWith("percent", StringComparison.OrdinalIgnoreCase) ? "%" : $"{uom}")}" });
+                    values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value} {(uom.StartsWith("percent", StringComparison.OrdinalIgnoreCase) ? "%" : $"{uom}")}", UnitOfMeasure = $"{uom}" });
                 }
                 else
                 {
@@ -443,6 +444,7 @@ public class WeatherService : IDisposable
         return values;
     }
 
+    #region [Helpers]
     /// <summary>
     /// Returns the unit of measure from the wmoUnit string. <br/>
     /// <code>
@@ -456,6 +458,93 @@ public class WeatherService : IDisposable
 
         return wmoUnit.Replace("wmoUnit:", "", StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// Simplified parses for the start time from a NOAA valid time string.
+    /// </summary>
+    /// <remarks>The method expects the input string to contain a start and end time separated by a forward
+    /// slash ('/'), with each part in ISO 8601 format. Only the start time portion is parsed and returned. If the input
+    /// is not in the expected format, a FormatException may be thrown.</remarks>
+    /// <param name="validTime">A string representing the NOAA valid time period, formatted as "start/end" where each part is an ISO 8601 date
+    /// and time.</param>
+    /// <returns>A <see cref="DateTime"/> value representing the start time extracted from the valid time string.</returns>
+    public DateTime ParseNoaaStartTime(string validTime)
+    {
+        return DateTime.Parse(validTime.Split('/')[0], null, System.Globalization.DateTimeStyles.RoundtripKind);
+    }
+
+    /// <summary>
+    /// NOAA’s quirkiest formats: a start time followed by an ISO‑8601 duration.
+    /// <code>
+    ///   var parsed = NoaaTimeParser.ParseValidTime("2026-01-17T08:00:00+00:00/PT4H");
+    ///   DateTime start = parsed.Start;       // 2026-01-17 08:00 UTC
+    ///   TimeSpan duration = parsed.Duration; // 4 hours
+    ///   DateTime end = parsed.End;           // 2026-01-17 12:00 UTC
+    /// </code>
+    /// </summary>
+    /// <param name="validTime">e.g. 2026-01-17T08:00:00+00:00/PT4H</param>
+    /// <returns>tuple</returns>
+    /// <exception cref="FormatException"></exception>
+    public (DateTime Start, TimeSpan Duration, DateTime End) ParseNoaaValidTime(string validTime)
+    {
+        // NOAA format: "2026-01-17T08:00:00+00:00/PT4H"
+        var parts = validTime.Split('/');
+        if (parts.Length != 2)
+            throw new FormatException($"Invalid NOAA validTime format: {validTime}");
+        // Start time
+        var start = DateTime.Parse(parts[0], null, System.Globalization.DateTimeStyles.RoundtripKind);
+        // Duration
+        var duration = System.Xml.XmlConvert.ToTimeSpan(parts[1]);
+        // End time
+        var end = start + duration;
+        return (start, duration, end);
+    }
+
+    /// <summary>
+    /// English sentence parser to extract amount of snowfall/rainfall in inches.
+    /// </summary>
+    public string ExtractAmount(string sentence)
+    {
+        sentence = sentence.ToLower().Trim();
+
+        // Pattern: "2 to 4 inches"
+        var rangeMatch = Regex.Match(sentence, @"(\d+(\.\d+)?)\s*to\s*(\d+(\.\d+)?)\s*(inch|inches)");
+        if (rangeMatch.Success)
+        {
+            double low = double.Parse(rangeMatch.Groups[1].Value);
+            double high = double.Parse(rangeMatch.Groups[3].Value);
+            return $"{low:0.0} - {high:0.0} inches";
+        }
+        // Pattern: "less than half an inch"
+        if (sentence.Contains("less than half an inch"))
+            return "< 0.5 inch";
+        // Pattern: "less than an inch"
+        if (sentence.Contains("less than an inch"))
+            return "< 1.0 inch";
+        // Pattern: "half an inch"
+        if (sentence.Contains("half an inch"))
+            return "0.5 inch";
+        // Pattern: "around an inch"
+        if (sentence.Contains("around an inch"))
+            return "~ 1.0 inch";
+        // Pattern: "around X inches"
+        var aroundMatch = Regex.Match(sentence, @"around\s+(\d+(\.\d+)?)\s*(inch|inches)");
+        if (aroundMatch.Success)
+        {
+            double val = double.Parse(aroundMatch.Groups[1].Value);
+            return $"~ {val:0.0} inches";
+        }
+        // Pattern: "X inches"
+        var singleMatch = Regex.Match(sentence, @"(\d+(\.\d+)?)\s*(inch|inches)");
+        if (singleMatch.Success)
+        {
+            double val = double.Parse(singleMatch.Groups[1].Value);
+            return $"{val:0.0} inches";
+        }
+        // No match
+        return string.Empty;
+    }
+    #endregion
 
     /// <summary>
     /// Perform any cleanup routines here.

@@ -86,7 +86,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         
-        this.DataContext = this; // ⇦ very important for INotifyPropertyChanged!
+        this.DataContext = this; // ⇦ very important for INotifyPropertyChanged
 
         Debug.WriteLine($"[INFO] Application version {App.GetCurrentAssemblyVersion()}");
     }
@@ -305,19 +305,44 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
             #endregion
 
-            // Confirm our collections are in sync (we could add date checking to confirm match)
-            if (forecast.Properties.Periods.Count == precipAmounts.Count)
+            bool tryPrecipitationValues = false;
+
+            if (tryPrecipitationValues)
             {
-                for (int i = 0; i < forecast.Properties.Periods.Count; i++)
+                // Confirm our collections are in sync
+                if (forecast.Properties.Periods.Count == precipAmounts.Count)
                 {
-                    forecast.Properties.Periods[i].PrecipitationAmount = precipAmounts[i].Value;
+                    for (int i = 0; i < forecast.Properties.Periods.Count; i++)
+                    {
+                        forecast.Properties.Periods[i].PrecipitationAmount = precipAmounts[i].Value;
+                    }
+                }
+                else // We're not in sync, so we need to merge by closest time
+                {
+                    try
+                    {
+                        var merged = MergeClosest(forecast.Properties.Periods, precipAmounts);
+                        for (int i = 0; i < forecast.Properties.Periods.Count; i++)
+                        {
+                            forecast.Properties.Periods[i].PrecipitationAmount = merged[i].DetailPrecip;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Extensions.WriteToLog($"Error merging precipitation data: {ex.Message}", level: LogLevel.ERROR);
+                    }
                 }
             }
-            else
+            else // Our fallback is to simply extract from detailed forecast text
             {
+                string uom = "";
+                if (precipAmounts.Count != 0)
+                    uom = precipAmounts[0].UnitOfMeasure;
+
                 for (int i = 0; i < forecast.Properties.Periods.Count; i++)
                 {
-                    forecast.Properties.Periods[i].PrecipitationAmount = "N/A";
+                    var parsed = _weatherService.ExtractAmount(forecast.Properties.Periods[i].DetailedForecast);
+                    forecast.Properties.Periods[i].PrecipitationAmount = string.IsNullOrEmpty(parsed) ? $"0 {uom}" : parsed;
                 }
             }
 
@@ -328,7 +353,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             var ucode = _weatherService.GetUnitCode(forecast.Properties.Elevation.UnitCode);
             if (ucode.Equals("m", StringComparison.OrdinalIgnoreCase))
             {
-                var elevation = forecast.Properties.Elevation.Value * 3.28084; // convert meters to feet
+                var elevation = UnitConverter.MetersToFeet(forecast.Properties.Elevation.Value);
                 Status2 = $"Probability of precipitation: {forecast.Properties.Periods[0].ProbabilityOfPrecipitation.Value}% (elevation {elevation:N0} feet)";
             }
             else
@@ -373,4 +398,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return result * factor;
     }
     #endregion
+
+    public List<MergedWeather> MergeClosest(List<ForecastPeriod> basic, List<PrecipitationValue> precip)
+    {
+        var result = new List<MergedWeather>();
+        var sortedPrecip = precip.OrderBy(p => _weatherService.ParseNoaaStartTime(p.Time)).ToList();
+        foreach (var b in basic)
+        {
+            // Find the precipitation entry with the smallest time difference
+            var closest = sortedPrecip
+                .OrderBy(p => Math.Abs((_weatherService.ParseNoaaStartTime(p.Time) - b.StartTime).TotalMinutes))
+                .FirstOrDefault();
+
+            result.Add(new MergedWeather
+            {
+                Time = b.StartTime,
+                ForcastPrecip = b.PrecipitationAmount,
+                DetailPrecip = string.IsNullOrEmpty(closest?.Value) ? "N/A" : closest.Value
+            });
+        }
+        return result;
+    }
 }
