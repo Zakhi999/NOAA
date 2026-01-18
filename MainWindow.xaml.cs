@@ -231,9 +231,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (e.NewSize.IsInvalidOrZero())
             return;
-
-        Debug.WriteLine($"[INFO] New size: {e.NewSize.Width:N0},{e.NewSize.Height:N0}");
-
+        //Debug.WriteLine($"[INFO] New size: {e.NewSize.Width:N0},{e.NewSize.Height:N0}");
         // Add in some margin
         spBackground.Width = e.NewSize.Width - 10;
         spBackground.Height = e.NewSize.Height - 10;
@@ -259,6 +257,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             if (forecast == null || forecast.Properties == null)
             {
                 Status = $"No data to work with";
+                App.ShowDialog($"🚨 Could not get data from the API.", "Warning", assetName: "assets/warning.png");
                 return;
             }
 
@@ -274,14 +273,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 Debug.WriteLine($"[INFO] {item.Time}  {item.Value} ");
             }
             /* [EXAMPLE]
-               2026-01-12T03:00:00+00:00/PT3H  0.0 inches
-               2026-01-12T06:00:00+00:00/PT6H  0.0 inches 
-               2026-01-12T12:00:00+00:00/PT6H  0.0 inches 
-               2026-01-12T18:00:00+00:00/PT6H  0.0 inches 
-               2026-01-13T00:00:00+00:00/PT6H  0.0 inches 
-               2026-01-13T06:00:00+00:00/PT6H  0.0 inches 
-               2026-01-13T12:00:00+00:00/PT6H  0.0 inches 
-               2026-01-13T18:00:00+00:00/PT6H  0.0 inches 
                2026-01-14T00:00:00+00:00/PT6H  0.0 inches 
                2026-01-14T06:00:00+00:00/PT6H  0.0 inches 
                2026-01-14T12:00:00+00:00/PT6H  0.0 inches 
@@ -329,7 +320,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                     }
                     catch (Exception ex)
                     {
-                        Extensions.WriteToLog($"Error merging precipitation data: {ex.Message}", level: LogLevel.ERROR);
+                        App.ShowDialog($"🚨 Error merging precipitation data:{Environment.NewLine}{ex.Message}", "Warning", assetName: "assets/warning.png");
                     }
                 }
             }
@@ -337,12 +328,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             {
                 string uom = "";
                 if (precipAmounts.Count != 0)
-                    uom = precipAmounts[0].UnitOfMeasure;
-
-                for (int i = 0; i < forecast.Properties.Periods.Count; i++)
                 {
-                    var parsed = _weatherService.ExtractAmount(forecast.Properties.Periods[i].DetailedForecast);
-                    forecast.Properties.Periods[i].PrecipitationAmount = string.IsNullOrEmpty(parsed) ? $"0 {uom}" : parsed;
+                    uom = precipAmounts[0].UnitOfMeasure;
+                    for (int i = 0; i < forecast.Properties.Periods.Count; i++)
+                    {
+                        var parsed = _weatherService.ExtractAmount(forecast.Properties.Periods[i].DetailedForecast, uom);
+                        forecast.Properties.Periods[i].PrecipitationAmount = string.IsNullOrEmpty(parsed) ? $"0 {uom}" : parsed;
+                    }
+                }
+                else
+                {
+                    // No unit of measure available
+                    for (int i = 0; i < forecast.Properties.Periods.Count; i++)
+                    {
+                        var parsed = _weatherService.ExtractAmount(forecast.Properties.Periods[i].DetailedForecast);
+                        forecast.Properties.Periods[i].PrecipitationAmount = string.IsNullOrEmpty(parsed) ? $"0" : parsed;
+                    }
                 }
             }
 
@@ -363,7 +364,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            App.ShowDialog($"Error loading forecast: {ex.Message}", "Warning", assetName: "assets/error.png");
+            App.ShowDialog($"Error loading forecast:{Environment.NewLine}{ex.Message}", "Warning", assetName: "assets/error.png");
         }
     }
 
@@ -399,6 +400,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     }
     #endregion
 
+    #region [Helpers]
     public List<MergedWeather> MergeClosest(List<ForecastPeriod> basic, List<PrecipitationValue> precip)
     {
         var result = new List<MergedWeather>();
@@ -419,4 +421,5 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         return result;
     }
+    #endregion
 }

@@ -505,6 +505,9 @@ public class WeatherService : IDisposable
     /// </summary>
     public string ExtractAmount(string sentence)
     {
+        if (string.IsNullOrWhiteSpace(sentence))
+            return string.Empty;
+
         sentence = sentence.ToLower().Trim();
 
         // Pattern: "2 to 4 inches"
@@ -513,7 +516,7 @@ public class WeatherService : IDisposable
         {
             double low = double.Parse(rangeMatch.Groups[1].Value);
             double high = double.Parse(rangeMatch.Groups[3].Value);
-            return $"{low:0.0} - {high:0.0} inches";
+            return $"{low:0.0} – {high:0.0} inches";
         }
         // Pattern: "less than half an inch"
         if (sentence.Contains("less than half an inch"))
@@ -540,6 +543,65 @@ public class WeatherService : IDisposable
         {
             double val = double.Parse(singleMatch.Groups[1].Value);
             return $"{val:0.0} inches";
+        }
+        // No match
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Sentence parser to extract amount of snowfall/rainfall in <paramref name="uom"/>.
+    /// </summary>
+    public string ExtractAmount(string sentence, string uom)
+    {
+        if (string.IsNullOrWhiteSpace(sentence) || string.IsNullOrWhiteSpace(uom))
+            return string.Empty;
+
+        sentence = sentence.ToLower().Trim();
+
+        string uomSing = uom;
+        string uomPlur = uom;
+        if (uom.EndsWith("s", StringComparison.OrdinalIgnoreCase))
+        {
+            uomSing = uom[..^1]; // remove trailing 's'
+        }
+        else
+        {
+            uomPlur = $"{uom}s"; // add trailing 's'
+        }
+
+        // Pattern: "2 to 4 mms"
+        var rangeMatch = Regex.Match(sentence, @"(\d+(\.\d+)?)\s*to\s*(\d+(\.\d+)?)\s*(" + uomSing + "|" + uomPlur + ")");
+        if (rangeMatch.Success)
+        {
+            double low = double.Parse(rangeMatch.Groups[1].Value);
+            double high = double.Parse(rangeMatch.Groups[3].Value);
+            return $"{low:0.0} – {high:0.0} {uomPlur}";
+        }
+        // Pattern: "less than half a mm"
+        if (sentence.Contains($"less than half a {uomSing}") || sentence.Contains($"less than half an {uomSing}"))
+            return $"< 0.5 {uomSing}";
+        // Pattern: "less than a mm"
+        if (sentence.Contains($"less than a {uomSing}") || sentence.Contains($"less than an {uomSing}"))
+            return $"< 1.0 {uomSing}";
+        // Pattern: "half a mm"
+        if (sentence.Contains($"half a {uomSing}") || sentence.Contains($"half an {uomSing}"))
+            return $"0.5 {uomSing}";
+        // Pattern: "around a mm"
+        if (sentence.Contains($"around a {uomSing}") || sentence.Contains($"around an {uomSing}"))
+            return $"~ 1.0 {uomSing}";
+        // Pattern: "around X mms"
+        var aroundMatch = Regex.Match(sentence, @$"around\s+(\d+(\.\d+)?)\s*(" + uomSing + "|" + uomPlur + ")");
+        if (aroundMatch.Success)
+        {
+            double val = double.Parse(aroundMatch.Groups[1].Value);
+            return $"~ {val:0.0} {uomPlur}";
+        }
+        // Pattern: "X mms"
+        var singleMatch = Regex.Match(sentence, @$"(\d+(\.\d+)?)\s*(" + uomSing + "|" + uomPlur + ")");
+        if (singleMatch.Success)
+        {
+            double val = double.Parse(singleMatch.Groups[1].Value);
+            return $"{val:0.0} {uomPlur}";
         }
         // No match
         return string.Empty;
