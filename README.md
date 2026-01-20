@@ -12,10 +12,12 @@
 - A [WPF](https://learn.microsoft.com/en-us/dotnet/desktop/wpf) application that fetches the weekly forecast from the goverment weather [API](https://api.weather.gov).
 - The background wind effect is based on the actual wind speed for the current day.
 - Enter your latitude/longitude into the `Settings.xml` file for your region.
-- This project includes my home-brew [spinner](https://github.com/GuildOfCalamity/SpinnerDemo) control for the background animations.
+- This project includes my home-brew `CartesianChart` control, and my [spinner](https://github.com/GuildOfCalamity/SpinnerDemo) control for the background animations.
 - Don't forget to give a ⭐ if you find this repo helpful or informative.
 
 ![Screenshot](./Assets/Screenshot.png)
 
-![Settings](./Assets/Screenshot2.png)
+![CartesianChart](./Assets/Screenshot2.png)
+
+![Settings](./Assets/Screenshot3.png)
 

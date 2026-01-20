@@ -136,6 +136,54 @@ public static class Extensions
     /// <summary>
     /// Extracts all numbers from a string and returns the largest one.
     /// <code>
+    ///   "0.5 inches" returns 0.5
+    /// </code>
+    /// </summary>
+    public static double GetMaximumDouble(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return 0.0;
+
+        // Match integers and decimals (e.g., 0.5, 1, 1.0)
+        var matches = Regex.Matches(input, @"-?\d+(?:\.\d+)?");
+
+        if (matches.Count == 0)
+            return 0.0;
+
+        // Convert matches to doubles and return the maximum value
+        return matches.Select(m => double.TryParse(m.Value, out double val) ? val : 0).Max();
+        
+        // For older .NET versions
+        //return matches.Cast<Match>().Select(m => double.TryParse(m.Value, out double val) ? val : 0).Max();
+    }
+
+    /// <summary>
+    /// Extracts all numbers from a string and returns the smallest one.
+    /// <code>
+    ///   "0.5 inches" returns 0.5
+    /// </code>
+    /// </summary>
+    public static double GetMinimumDouble(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return 0.0;
+
+        // Match integers and decimals (e.g., 0.5, 1, 1.0)
+        var matches = Regex.Matches(input, @"-?\d+(?:\.\d+)?");
+
+        if (matches.Count == 0)
+            return 0.0;
+
+        // Convert matches to doubles and return the minimum value
+        return matches.Select(m => double.TryParse(m.Value, out double val) ? val : 0).Min();
+        
+        // For older .NET versions
+        //return matches.Cast<Match>().Select(m => double.TryParse(m.Value, out double val) ? val : 0).Min();
+    }
+
+    /// <summary>
+    /// Extracts all numbers from a string and returns the largest one.
+    /// <code>
     ///   "5 to 15 mph" returns 15.
     ///   Returns -1 if any error occurs.
     /// </code>

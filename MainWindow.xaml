@@ -30,7 +30,8 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="3*" />
                 </Grid.ColumnDefinitions>
                 <Button
                     x:Name="btnGet"
@@ -71,7 +72,18 @@
                     WaveDuration="1.1"
                     WindAmplitude="1"
                     WindFrequency="0.5" />
-                <Grid Grid.Column="1">
+                <Button
+                    x:Name="btnChart"
+                    Grid.Column="1"
+                    Height="30"
+                    Margin="2,1,0,0"
+                    Background="#303030"
+                    Click="ShowChartClick"
+                    Content="Show Chart"
+                    FontSize="14"
+                    Foreground="{StaticResource PrimaryBrush}"
+                    Template="{StaticResource ReformedButton}" />
+                <Grid Grid.Column="2">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
@@ -98,7 +110,10 @@
         <!--#endregion-->
 
         <!--#region [Weather Report]-->
-        <ScrollViewer Grid.Row="1" Grid.RowSpan="2">
+        <ScrollViewer
+            x:Name="viewer"
+            Grid.Row="1"
+            Grid.RowSpan="2">
             <ItemsControl x:Name="ForecastList">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -238,6 +253,11 @@
             ForegroundBrush="{StaticResource NormalBrush}"
             TextSize="16"
             TimeoutMS="4000" />
+
+        <ctrl:CartesianChart
+            x:Name="chart"
+            Grid.Row="1"
+            Series="{Binding PrecipSeries}" />
 
     </Grid>
 </Window>

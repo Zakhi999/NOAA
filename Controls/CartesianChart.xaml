@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="NOAA.Controls.CartesianChart"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NOAA.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="450">
+    <Grid>
+        <Canvas x:Name="PART_Canvas" Background="Transparent" ClipToBounds="False">
+            <!-- Highlight -->
+            <Ellipse x:Name="PART_HighlightDot"
+             Width="14"
+             Height="14"
+             Fill="DeepSkyBlue"
+             Stroke="White"
+             StrokeThickness="1"
+             Visibility="Collapsed"/>
+            <!-- Tooltip -->
+            <Border x:Name="PART_Tooltip"
+                    Background="#88000000"
+                    BorderBrush="#881E90FF"
+                    BorderThickness="1"
+                    Padding="10,4"
+                    CornerRadius="4"
+                    Visibility="Collapsed">
+                <TextBlock x:Name="PART_TooltipText" Background="Transparent" FontSize="14" Foreground="White"/>
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="8" Opacity="0.7"/>
+                </Border.Effect>
+            </Border>
+        </Canvas>
+    </Grid>
+
+</UserControl>

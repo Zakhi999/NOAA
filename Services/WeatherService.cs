@@ -294,18 +294,16 @@ public class WeatherService : IDisposable
     /// <summary>
     /// Using the data grid API will return extra details.
     /// <code>
-    ///   [Arrays]
-    ///    "temperature", "dewpoint", "relativeHumidity", "apparentTemperature",
-    ///    "wetBulbGlobeTemperature", "heatIndex", "windChill", "skyCover",
-    ///    "windDirection", "windSpeed", "windGust", "hazards", "probabilityOfPrecipitation",
-    ///    "quantitativePrecipitation", "iceAccumulation", "snowfallAmount", "snowLevel"
-    ///    "ceilingHeight", "visibility", "transportWindSpeed", "transportWindDirection",
-    ///    "mixingHeight", "hainesIndex", "lightningActivityLevel", "twentyFootWindSpeed",
-    ///    "twentyFootWindDirection", "waveHeight", "wavePeriod", "waveDirection", "primarySwellHeight", 
-    ///    "primarySwellDirection", "secondarySwellHeight", "secondarySwellDirection", "wavePeriod2",
-    ///    "windWaveHeight", "dispersionIndex", "pressure", "probabilityOfTropicalStormWinds",
-    ///    "probabilityOfHurricaneWinds", "potentialOf15mphWinds", "potentialOf25mphWinds",
-    ///    "potentialOf35mphWinds", "potentialOf45mphWinds", "potentialOf20mphWindGusts",
+    ///   [Available JSON arrays]
+    ///    "temperature", "dewpoint", "relativeHumidity", "apparentTemperature", "wetBulbGlobeTemperature", 
+    ///    "heatIndex", "windChill", "skyCover", "windDirection", "windSpeed", "windGust", "hazards", 
+    ///    "probabilityOfPrecipitation", "quantitativePrecipitation", "iceAccumulation", "snowfallAmount", 
+    ///    "snowLevel", "ceilingHeight", "visibility", "transportWindSpeed", "transportWindDirection",
+    ///    "mixingHeight", "hainesIndex", "lightningActivityLevel", "twentyFootWindSpeed", "twentyFootWindDirection", 
+    ///    "waveHeight", "wavePeriod", "waveDirection", "primarySwellHeight", "primarySwellDirection", 
+    ///    "secondarySwellHeight", "secondarySwellDirection", "wavePeriod2", "windWaveHeight", "dispersionIndex", 
+    ///    "pressure", "probabilityOfTropicalStormWinds", "probabilityOfHurricaneWinds", "potentialOf15mphWinds", 
+    ///    "potentialOf25mphWinds", "potentialOf35mphWinds", "potentialOf45mphWinds", "potentialOf20mphWindGusts",
     ///    "potentialOf30mphWindGusts", "potentialOf40mphWindGusts", "potentialOf50mphWindGusts",
     ///    "potentialOf60mphWindGusts", "grasslandFireDangerIndex", "probabilityOfThunder",
     ///    "davisStabilityIndex", "atmosphericDispersionIndex", "lowVisibilityOccurrenceRiskIndex",
@@ -325,6 +323,8 @@ public class WeatherService : IDisposable
             var json = await _http.GetStringAsync(url);
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
+            if (forecast == null)
+                return values;
 
             var uom = GetUnitCode(forecast.Properties.QuantitativePrecipitation.Uom);
             Debug.WriteLine($"[INFO] QuantitativePrecipitation unit of measure is {uom}");
@@ -376,6 +376,8 @@ public class WeatherService : IDisposable
             var json = await _http.GetStringAsync(url);
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
+            if (forecast == null)
+                return values;
 
             var uom = GetUnitCode(forecast.Properties.QuantitativePrecipitation.Uom);
             Debug.WriteLine($"[INFO] QuantitativePrecipitation unit of measure is {uom}");
@@ -385,6 +387,59 @@ public class WeatherService : IDisposable
                 divFactor = 25.4; // divide the length value by 25.4 (1 millimeter = 0.0393701 inches, 1 inch = 25.4 millimeters)
             }
             foreach (var item in forecast.Properties.QuantitativePrecipitation.Values)
+            {
+                if (double.TryParse($"{item.Value}", out double value))
+                {
+                    if (!divFactor.IsInvalidOrZero())
+                    {
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} inches", UnitOfMeasure = "inches" });
+                    }
+                    else
+                    {
+                        values.Add(new PrecipitationValue { Time = $"{item.ValidTime}", Value = $"{value / divFactor:N1} {uom}", UnitOfMeasure = $"{uom}" });
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"[WARNING] item.Value is not valid ");
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Extensions.WriteToLog($"{System.Reflection.MethodBase.GetCurrentMethod()?.Name}: {ex.Message}", LogLevel.ERROR);
+        }
+        return values;
+    }
+
+    /// <summary>
+    /// We can use the gridData url or just strip off the "/forecast" postfix.
+    /// </summary>
+    /// <param name="forecastUrl"></param>
+    /// <returns><see cref="List{T}"/> where T is <see cref="PrecipitationValue"/></returns>
+    public async Task<List<PrecipitationValue>> GetWeeklySnowfallAmountAsync(string forecastUrl)
+    {
+        List<PrecipitationValue> values = new List<PrecipitationValue>();
+
+        try
+        {
+            // e.g. https://api.weather.gov/gridpoints/PHI/34,100
+            var url = forecastUrl.Replace("/forecast", "", StringComparison.OrdinalIgnoreCase);
+            var json = await _http.GetStringAsync(url);
+
+            var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
+            if (forecast == null)
+                return values;
+
+            var uom = GetUnitCode(forecast.Properties.SnowfallAmount.Uom);
+            Debug.WriteLine($"[INFO] QuantitativePrecipitation unit of measure is {uom}");
+            double divFactor = 0;
+            if (uom.Equals("mm", StringComparison.OrdinalIgnoreCase))
+            {
+                divFactor = 25.4; // divide the length value by 25.4 (1 millimeter = 0.0393701 inches, 1 inch = 25.4 millimeters)
+            }
+            foreach (var item in forecast.Properties.SnowfallAmount.Values)
             {
                 if (double.TryParse($"{item.Value}", out double value))
                 {
@@ -421,6 +476,8 @@ public class WeatherService : IDisposable
             var json = await _http.GetStringAsync(url);
 
             var forecast = JsonSerializer.Deserialize<GridpointResponse>(json, _options);
+            if (forecast == null)
+                return values;
 
             var uom = GetUnitCode(forecast.Properties.ProbabilityOfPrecipitation.Uom);
             Debug.WriteLine($"[INFO] ProbabilityOfPrecipitation unit of measure is {uom}");
@@ -606,6 +663,92 @@ public class WeatherService : IDisposable
         // No match
         return string.Empty;
     }
+
+    /// <summary>
+    /// English sentence parser to extract amount of snowfall/rainfall in inches.
+    /// </summary>
+    public double ExtractAmountToDouble(string sentence)
+    {
+        if (string.IsNullOrWhiteSpace(sentence))
+            return 0.0;
+
+        sentence = sentence.ToLower().Trim();
+
+        // Pattern: "2 to 4 inches"
+        var rangeMatch = Regex.Match(sentence, @"(\d+(\.\d+)?)\s*to\s*(\d+(\.\d+)?)\s*(inch|inches)");
+        if (rangeMatch.Success)
+        {
+            double low = double.Parse(rangeMatch.Groups[1].Value);
+            double high = double.Parse(rangeMatch.Groups[3].Value);
+            return high;
+        }
+        // Pattern: "less than half an inch"
+        if (sentence.Contains("less than half an inch"))
+            return 0.25;
+        // Pattern: "less than an inch"
+        if (sentence.Contains("less than an inch"))
+            return 0.75;
+        // Pattern: "half an inch"
+        if (sentence.Contains("half an inch"))
+            return 0.5;
+        // Pattern: "around an inch"
+        if (sentence.Contains("around an inch"))
+            return 1.0;
+        // Pattern: "around X inches"
+        var aroundMatch = Regex.Match(sentence, @"around\s+(\d+(\.\d+)?)\s*(inch|inches)");
+        if (aroundMatch.Success)
+        {
+            double val = double.Parse(aroundMatch.Groups[1].Value);
+            return val;
+        }
+        // Pattern: "X inches"
+        var singleMatch = Regex.Match(sentence, @"(\d+(\.\d+)?)\s*(inch|inches)");
+        if (singleMatch.Success)
+        {
+            double val = double.Parse(singleMatch.Groups[1].Value);
+            return val;
+        }
+        // No match
+        return 0.0;
+    }
+
+    /// <summary>
+    /// Normalizes a list of QPF values (in mm) into a readable precipitation range.
+    /// <code>
+    ///   var qpfValues = new List<double?> { 0.0, 1.2, 2.8 }; // millimeters
+    ///   string result = NormalizeQpfRange(qpfValues); // "0.0 - 0.1 inches"
+    /// </code>
+    /// </summary>
+    public string NormalizeQpfRange(IEnumerable<double?> mmValues)
+    {
+        // Filter out nulls
+        var values = mmValues.Where(v => v.HasValue).Select(v => v.Value).ToList();
+
+        if (values.Count == 0)
+            return "0 inch";
+
+        // Convert mm → inches
+        var inches = values.Select(UnitConverter.MmToInches).ToList();
+
+        double min = inches.Min();
+        double max = inches.Max();
+
+        // No measurable precipitation
+        if (max <= 0.01)
+            return "0 inch";
+
+        // Very small amounts
+        if (max < 0.1)
+            return "< 0.1 inch";
+
+        // Narrow range (e.g., 0.18–0.22)
+        if (Math.Abs(max - min) < 0.05)
+            return $"~ {max:0.0} inch";
+
+        // Normal range
+        return $"{min:0.0} – {max:0.0} inches";
+    }
+
     #endregion
 
     /// <summary>
